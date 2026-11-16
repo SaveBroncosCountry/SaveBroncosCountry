@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Broncos Country: No PSLs Petition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background to reduce glare outdoors */
+            overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile */
+        }
+        /* Broncos Colors */
+        .broncos-navy { background-color: #002244; }
+        .broncos-navy-text { color: #002244; }
+        .broncos-orange { background-color: #FB4F14; }
+        .broncos-orange-text { color: #FB4F14; }
+        
+        /* Canvas Styling */
+        #signature-pad {
+            touch-action: none; /* CRITICAL: Prevents the page from scrolling when signing */
+            background-color: white;
+        }
+
+        /* Custom alert modal hidden by default */
+        .hidden-modal { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col items-center p-4 md:p-8">
+        
+        <!-- Header -->
+        <header class="w-full max-w-4xl text-center mb-8 bg-white p-6 rounded-2xl shadow-lg border-t-8 border-[#FB4F14]">
+            <h1 class="text-4xl md:text-6xl font-extrabold broncos-navy-text uppercase tracking-tight mb-4">
+                Broncos Country:<br><span class="broncos-orange-text">No PSLs</span> Petition
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-700 font-medium">
+                Keep the stadium in the hands of the fans. Sign below to tell the ownership group to reject Personal Seat Licenses.
+            </p>
+        </header>
+
+        <!-- Form Area -->
+        <div class="w-full max-w-4xl bg-white p-6 md:p-10 rounded-2xl shadow-xl">
+            <form id="petition-form" class="space-y-6 md:space-y-8">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                    <div>
+                        <label class="block text-xl font-bold broncos-navy-text mb-2" for="firstName">First Name</label>
+                        <input type="text" id="firstName" required
+                            class="w-full p-5 text-2xl border-4 border-gray-200 rounded-xl focus:outline-none focus:border-[#FB4F14] transition-colors"
+                            placeholder="John">
+                    </div>
+                    <div>
+                        <label class="block text-xl font-bold broncos-navy-text mb-2" for="lastName">Last Name</label>
+                        <input type="text" id="lastName" required
+                            class="w-full p-5 text-2xl border-4 border-gray-200 rounded-xl focus:outline-none focus:border-[#FB4F14] transition-colors"
+                            placeholder="Elway">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xl font-bold broncos-navy-text mb-2" for="email">Email Address</label>
+                    <input type="email" id="email" required
+                        class="w-full p-5 text-2xl border-4 border-gray-200 rounded-xl focus:outline-none focus:border-[#FB4F14] transition-colors"
+                        placeholder="john.elway@example.com">
+                </div>
+
+                <!-- Signature Pad -->
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <label class="block text-xl font-bold broncos-navy-text">Draw Signature</label>
+                        <button type="button" id="clear-sig" class="text-lg font-bold text-gray-500 hover:text-red-600 underline">Clear</button>
+                    </div>
+                    <div class="border-4 border-gray-200 rounded-xl overflow-hidden shadow-inner bg-gray-50">
+                        <canvas id="signature-pad" class="w-full h-48 md:h-64 cursor-crosshair"></canvas>
+                    </div>
+                </div>
+
+                <button type="submit" 
+                    class="w-full broncos-orange text-white font-extrabold text-3xl p-6 rounded-xl shadow-lg active:scale-95 transition-transform uppercase tracking-wider mt-4">
+                    Sign Petition
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Discrete Admin Section at Bottom -->
+    <footer class="w-full bg-gray-200 mt-12 p-4">
+        <div class="max-w-4xl mx-auto">
+            <button id="toggle-admin" class="w-full text-center text-gray-400 font-bold text-sm tracking-widest hover:text-gray-600 uppercase">
+                Admin Access
+            </button>
+            
+            <div id="admin-panel" class="hidden mt-6 bg-white p-6 rounded-xl shadow-inner overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold broncos-navy-text">Collected Signatures (<span id="sig-count">0</span>)</h2>
+                    <div class="space-x-2">
+                        <button id="export-csv" class="broncos-navy text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-blue-900 transition">
+                            Export to CSV
+                        </button>
+                        <button id="clear-data" class="bg-red-600 text-white px-6 py-3 rounded-lg font-bold shadow hover:bg-red-700 transition">
+                            Delete All Data
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto h-64 border-2 border-gray-200 rounded-lg">
+                    <table class="min-w-full text-left border-collapse">
+                        <thead class="bg-gray-100 sticky top-0">
+                            <tr>
+                                <th class="p-3 border-b-2 border-gray-300 font-bold">Date/Time</th>
+                                <th class="p-3 border-b-2 border-gray-300 font-bold">First Name</th>
+                                <th class="p-3 border-b-2 border-gray-300 font-bold">Last Name</th>
+                                <th class="p-3 border-b-2 border-gray-300 font-bold">Email</th>
+                                <th class="p-3 border-b-2 border-gray-300 font-bold">Signature</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-gray-200">
+                            <!-- Rows populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Success Message Box (Replaces alert()) -->
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden-modal backdrop-blur-sm p-4">
+        <div class="bg-white rounded-3xl p-10 max-w-lg w-full text-center shadow-2xl border-8 border-[#002244]">
+            <div class="text-7xl mb-4">🏈</div>
+            <h2 class="text-4xl font-extrabold broncos-orange-text mb-4 uppercase">Thank You!</h2>
+            <p class="text-2xl font-bold text-gray-700 mb-8">Your signature has been securely recorded.</p>
+            <button id="close-modal" class="broncos-navy text-white text-2xl font-bold py-4 px-10 rounded-xl w-full shadow-lg">
+                Next Person In Line
+            </button>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- Canvas Drawing Logic ---
+            const canvas = document.getElementById('signature-pad');
+            const ctx = canvas.getContext('2d');
+            const clearBtn = document.getElementById('clear-sig');
+            let isDrawing = false;
+            let hasDrawn = false;
+
+            // Set canvas resolution to match display size for sharp lines
+            function resizeCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+                ctx.strokeStyle = '#002244'; // Broncos Navy ink
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            function getCoordinates(event) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = event.touches ? event.touches[0].clientX : event.clientX;
+                const clientY = event.touches ? event.touches[0].clientY : event.clientY;
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+
+            function startDrawing(e) {
+                e.preventDefault(); // Prevent scrolling
+                isDrawing = true;
+                hasDrawn = true;
+                const pos = getCoordinates(e);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const pos = getCoordinates(e);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+                ctx.closePath();
+            }
+
+            // Mouse Events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+
+            // Touch Events for Samsung Tablet
+            canvas.addEventListener('touchstart', startDrawing, {passive: false});
+            canvas.addEventListener('touchmove', draw, {passive: false});
+            canvas.addEventListener('touchend', stopDrawing);
+
+            clearBtn.addEventListener('click', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                hasDrawn = false;
+            });
+
+
+            // --- Form Submission & LocalStorage ---
+            const form = document.getElementById('petition-form');
+            const modal = document.getElementById('success-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+
+            const STORAGE_KEY = 'broncos_psl_petition_data';
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const fName = document.getElementById('firstName').value.trim();
+                const lName = document.getElementById('lastName').value.trim();
+                const email = document.getElementById('email').value.trim();
+
+                // Validation
+                if (!hasDrawn) {
+                    // Quick custom warning
+                    const originalText = clearBtn.innerText;
+                    clearBtn.innerText = "SIGNATURE REQUIRED!";
+                    clearBtn.classList.add("text-red-600");
+                    setTimeout(() => {
+                        clearBtn.innerText = originalText;
+                        clearBtn.classList.remove("text-red-600");
+                    }, 2000);
+                    return;
+                }
+
+                const signatureDataUrl = canvas.toDataURL('image/png');
+                const timestamp = new Date().toLocaleString();
+
+                const record = {
+                    date: timestamp,
+                    firstName: fName,
+                    lastName: lName,
+                    email: email,
+                    signatureBase64: signatureDataUrl
+                };
+
+                // Get existing data, append new, save back to local storage
+                let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                data.push(record);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+                // Reset form for next person
+                form.reset();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                hasDrawn = false;
+                
+                // Refresh Admin Panel
+                renderAdminTable();
+
+                // Show Success Modal
+                modal.classList.remove('hidden-modal');
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                modal.classList.add('hidden-modal');
+                // Auto focus first name for the next fan
+                document.getElementById('firstName').focus();
+            });
+
+
+            // --- Admin Section Logic ---
+            const toggleAdminBtn = document.getElementById('toggle-admin');
+            const adminPanel = document.getElementById('admin-panel');
+            const tableBody = document.getElementById('admin-table-body');
+            const sigCount = document.getElementById('sig-count');
+            const exportCsvBtn = document.getElementById('export-csv');
+            const clearDataBtn = document.getElementById('clear-data');
+
+            toggleAdminBtn.addEventListener('click', () => {
+                if (adminPanel.classList.contains('hidden')) {
+                    adminPanel.classList.remove('hidden');
+                    renderAdminTable();
+                    // Scroll to bottom
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                } else {
+                    adminPanel.classList.add('hidden');
+                }
+            });
+
+            function renderAdminTable() {
+                const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                sigCount.innerText = data.length;
+                tableBody.innerHTML = ''; // Clear current
+
+                // Render in reverse chronological order (newest first)
+                data.slice().reverse().forEach(record => {
+                    const tr = document.createElement('tr');
+                    tr.classList.add('hover:bg-gray-50');
+                    
+                    tr.innerHTML = `
+                        <td class="p-3 text-sm text-gray-600">${record.date}</td>
+                        <td class="p-3 font-semibold">${record.firstName}</td>
+                        <td class="p-3 font-semibold">${record.lastName}</td>
+                        <td class="p-3 text-blue-600">${record.email}</td>
+                        <td class="p-3"><img src="${record.signatureBase64}" class="h-8 border bg-white" alt="Sig"></td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            }
+
+            // CSV Export
+            exportCsvBtn.addEventListener('click', () => {
+                const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                if (data.length === 0) return;
+
+                // Create CSV headers
+                let csvContent = "Date,First Name,Last Name,Email,Signature Status\n";
+
+                data.forEach(record => {
+                    // Wrap fields in quotes to handle commas in input safely
+                    const dateStr = `"${record.date}"`;
+                    const fNameStr = `"${record.firstName.replace(/"/g, '""')}"`;
+                    const lNameStr = `"${record.lastName.replace(/"/g, '""')}"`;
+                    const emailStr = `"${record.email.replace(/"/g, '""')}"`;
+                    const sigStatus = `"Captured"`;
+
+                    csvContent += `${dateStr},${fNameStr},${lNameStr},${emailStr},${sigStatus}\n`;
+                });
+
+                // Create Blob and trigger download
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', `broncos_signatures_${new Date().toISOString().slice(0,10)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            // Clear All Data
+            clearDataBtn.addEventListener('click', () => {
+                // Using a custom built-in confirm equivalent using UI elements would take extra HTML,
+                // Since this is the admin zone, we'll build a quick custom double-check so we avoid alert/confirm
+                if(clearDataBtn.innerText === "Delete All Data") {
+                    clearDataBtn.innerText = "Are you sure? Click again.";
+                    clearDataBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    clearDataBtn.classList.add('bg-orange-500', 'hover:bg-orange-600');
+                    
+                    // Reset button if they don't click within 3 seconds
+                    setTimeout(() => {
+                        clearDataBtn.innerText = "Delete All Data";
+                        clearDataBtn.classList.remove('bg-orange-500', 'hover:bg-orange-600');
+                        clearDataBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    }, 3000);
+                } else {
+                    // Confirmed
+                    localStorage.removeItem(STORAGE_KEY);
+                    renderAdminTable();
+                    clearDataBtn.innerText = "Data Erased";
+                    clearDataBtn.classList.remove('bg-orange-500', 'hover:bg-orange-600');
+                    clearDataBtn.classList.add('bg-gray-500');
+                    
+                    setTimeout(() => {
+                        clearDataBtn.innerText = "Delete All Data";
+                        clearDataBtn.classList.remove('bg-gray-500');
+                        clearDataBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    }, 2000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
